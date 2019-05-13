@@ -1,0 +1,18 @@
+#######
+# System testing job
+#######
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: tweetserver-tester
+spec:
+  template:
+    spec:
+      containers:
+      - name: tweetserver-tester
+        image: ozapinq/tweetserver-system-tests:latest
+        env:
+          - name: URL
+            value: http://tweetserver.default.svc.cluster.local:5555
+      restartPolicy: Never
+  backoffLimit: 5

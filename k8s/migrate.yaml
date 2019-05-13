@@ -1,0 +1,45 @@
+#######
+# DB Scheme Migration job
+#######
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: tweetserver-migrator
+spec:
+  template:
+    spec:
+      containers:
+      - name: tweetserver-migrator
+        image: cassandra:3.11.4
+        command: ["cqlsh"]
+        args:
+          - "cassandra.default.svc.cluster.local"
+          - "-f"
+          - "/migrations/1_initial.cql"
+        volumeMounts:
+          - name: tweetserver-migrations
+            mountPath: /migrations/
+      restartPolicy: Never
+      volumes:
+        - name: tweetserver-migrations
+          configMap:
+            name: tweetserver-migrations
+  backoffLimit: 0
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tweetserver-migrations
+data:
+  1_initial.cql: |
+    CREATE KEYSPACE IF NOT EXISTS tweetserver WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 1};
+
+    CREATE TABLE IF NOT EXISTS tweetserver.tweets_by_tag (
+    tag text,
+    created_at bigint,
+    tid bigint,
+    text text,
+    author text,
+    PRIMARY KEY((tag), created_at))
+    WITH CLUSTERING ORDER BY (created_at DESC);
+---

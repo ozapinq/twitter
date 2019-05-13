@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tweetserver
+  labels:
+    app: tweetserver
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tweetserver
+  template:
+    metadata:
+      labels:
+        app: tweetserver
+    spec:
+      containers:
+      - name: tweetserver
+        image: ozapinq/tweetserver:latest #TODO: change to specific
+        ports:
+        - containerPort: 5555
+        env:
+          - name: DB_NODES
+            value: cassandra.default.svc.cluster.local
+---
+
+#######
+# tweetserver Service exposing API through TCP/30000.
+# In real-world it is much better to use Ingress instead of NodePort Service.
+#######
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: tweetserver
+  name: tweetserver
+spec:
+  type: NodePort
+  ports:
+    - port: 5555
+      nodePort: 30000
+  selector:
+    app: tweetserver

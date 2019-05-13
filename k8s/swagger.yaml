@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: swagger
+  labels:
+    app: swagger
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: swagger
+  template:
+    metadata:
+      labels:
+        app: swagger
+    spec:
+      containers:
+      - name: swagger
+        image: quay.io/goswagger/swagger
+        args:
+          - "serve"
+          - "--no-open"
+          - "https://raw.githubusercontent.com/ozapinq/twitter/master/swagger.yaml"
+        ports:
+        - containerPort: 8000
+        env:
+          - name: PORT
+            value: "8000"
+---
+
+#######
+# tweetserver Service exposing API through TCP/30000.
+# In real-world it is much better to use Ingress instead of NodePort Service.
+#######
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: swagger
+  name: swagger
+spec:
+  type: NodePort
+  ports:
+    - port: 8000
+      nodePort: 32000
+  selector:
+    app: swagger

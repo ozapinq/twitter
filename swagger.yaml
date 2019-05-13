@@ -1,0 +1,85 @@
+swagger: "2.0"
+info:
+  title: Tweet API
+  description: API for basic operations on tweets
+  version: "1"
+schemes:
+  - http
+basePath: "/"
+host: twitter.totallyfakedomain.xyz:30000
+produces:
+  - application/json
+consumes:
+  - application/json
+
+paths:
+  /tweets:
+    post:
+      summary: Create new tweet
+      security:
+      - APIKeyHeader: []
+      parameters:
+        - in: body
+          name: tweet
+          description: tweet to be created
+          schema:
+            type: object
+            properties:
+              text:
+                type: string
+      responses:
+        201:
+          description: Created
+          headers:
+            Location:
+              type: string
+              description: URL of created tweet
+  /tags/{tag}/tweets:
+    get:
+      summary: Get tweets with tag
+      parameters:
+        - name: tag
+          in: path
+          type: string
+          required: true
+        - name: before
+          in: query
+          type: integer
+          required: false
+          description: "fetch tweets before some point in time"
+        - name: count
+          in: query
+          type: integer
+          required: false
+          description: "limit tweet count to some value (max 50)"
+      responses:
+        200:
+          description: OK
+          schema:
+            type: object
+            properties:
+              tweets:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    author:
+                      type: string
+                    text:
+                      type: string
+                    created_at:
+                      type: string
+                    tags:
+                      type: array
+                      items:
+                        type: string
+              next:
+                type: string
+                description: "next page of results"
+securityDefinitions:
+  APIKeyHeader:
+    type: apiKey
+    in: header
+    name: X-Auth-Token
